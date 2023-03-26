@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册-Register</title>
+    <style>
+        fieldset {
+            width: 300px;
+        }
+
+        legend {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        label {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        input {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        textarea {
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        function valid() {
+            let i;
+            const username = document.forms["loginForm"]["username"].value;
+            const password = document.forms["loginForm"]["password"].value;
+            if (username === "" || password === "") {
+                alert("用户名或密码不能为空！");
+                return false;
+            }
+            //这里已经在表单中设置了checked属性，所以不需要再判断是否为空，但是还是保留了
+            const gender = document.getElementsByName("gender");
+            for (i = 0; i < gender.length; i++) {
+                if (gender[i].checked) {
+                    break;
+                }
+                if (i === gender.length - 1) {
+                    alert("请选择性别！");
+                    return false;
+                }
+            }
+
+            const hobby = document.getElementsByName("hobby");
+            const arr = [];
+            for (i = 0; i < hobby.length; i++) {
+                if (hobby[i].checked) {
+                    arr.push(hobby[i].value);
+                }
+            }
+            if (arr.length === 0) {
+                alert("请选择爱好！");
+                return false;
+            }
+            alert("注册成功！");
+            return true;
+        }
+
+        function normal_login() {
+            //以普通方式提交
+            if (!valid()) {
+                return;
+            }
+            document.getElementById("loginForm").action = "register_action.jsp";
+            document.getElementById("loginForm").submit();
+        }
+
+        function total_reset() {
+            //重置表单
+            document.getElementById("loginForm").reset();
+        }
+
+        function ajax_login() {
+            if (!valid()) {
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status !== 200) {
+                        alert("发生错误：" + xhr.status);
+                    }
+                }
+            };
+            xhr.open("post", "register_action.jsp", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            const form = document.getElementById("loginForm");
+            const formData = new FormData(form);
+            let data = "";
+            for (const pair of formData.entries()) {
+                data += pair[0] + "=" + pair[1] + "&";
+            }
+            data = data.substring(0, data.length - 1);
+            xhr.send(data);
+            window.location.href = "register_action.jsp?" + data;
+        }
+    </script>
+
+</head>
+<body>
+<div align="center">
+    <form id="loginForm" method="post">
+        <table>
+            <tr>
+                <td>
+                    <fieldset>
+                        <legend>注册账户</legend>
+                        <div>
+                            <label for="name">用户名：<br>
+                            </label>
+                            <input id="name" name="username" placeholder="请输入用户名" type="text">
+                        </div>
+                        <div>
+                            <label for="pass">密码：<br>
+                            </label>
+                            <input id="pass" name="password" placeholder="请输入密码" type="password">
+                        </div>
+                    </fieldset>
+                </td>
+            </tr>
+            <tr>
+                <td>
+
+                    <fieldset>
+                        <legend>性别</legend>
+                        <input id="male" name="gender" type="radio" value="male" checked="true">
+                        <label for="male">男</label>
+                        <br>
+                        <input id="female" name="gender" type="radio" value="female">
+                        <label for="female">女</label>
+                        <br>
+                        <input id="helicopter" name="gender" type="radio" value="helicopter"/>
+                        <label for="helicopter">武装直升机</label>
+                    </fieldset>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <fieldset>
+                        <legend>爱好</legend>
+                        <input id="basketball" name="hobby" type="checkbox" value="basketball">
+                        <label for="basketball">篮球</label>
+                        <br>
+                        <input id="football" name="hobby" type="checkbox" value="football">
+                        <label for="football">足球</label>
+                        <br>
+                        <input id="pingpong" name="hobby" type="checkbox" value="pingpong">
+                        <label for="pingpong">乒乓</label>
+                        <br>
+                        <input id="swimming" name="hobby" type="checkbox" value="swimming">
+                        <label for="swimming">游泳</label>
+                        <br>
+                        <input id="hiking" name="hobby" type="checkbox" value="hiking">
+                        <label for="hiking">徒步</label>
+                    </fieldset>
+                </td>
+            </tr>
+
+        </table>
+
+
+        <table>
+            <tr>
+                <td>
+
+                    <fieldset>
+                        <legend>个人简介</legend>
+                        <textarea cols="25" name="selfconduct"placeholder="请输入个人简介" rows="5">
+                        </textarea>
+                    </fieldset>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <button onclick="normal_login()" type="button">提交</button>
+    <button onclick="total_reset()" type="button">重置</button>
+    <button onclick="ajax_login()" type="button">ajax提交</button>
+
+</div>
+</body>
+</html>
