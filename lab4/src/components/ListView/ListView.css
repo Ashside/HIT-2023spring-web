@@ -1,0 +1,10 @@
+.ListView {
+    
+    display: flex;
+    flex-direction: row;
+    width: 630px;
+    height: 400px;
+    margin: auto;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
