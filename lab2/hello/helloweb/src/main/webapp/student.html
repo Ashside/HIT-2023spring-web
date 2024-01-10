@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学生信息-Information</title>
+    <script src="js/jquery-3.6.3.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        button {
+            display: block;
+            margin: 0 auto;
+            width: 100px;
+            height: 60px;
+            border-radius: 15px;
+        }
+
+        fieldset {
+            width: 100%;
+            height: 50px;
+            border: none;
+            color: red;
+            margin: 0 auto;
+        }
+    </style>
+    <script>
+
+        function validSid() {
+            let sid = document.getElementsByName("sid")[0].value;
+            if (sid === "") {
+                return false;
+            }
+            /*
+            let ssid = sid.toString();
+            let table = document.getElementById("rsTable");
+            for (let i = 1; i < table.rows.length; i++) {
+                if (table.rows[i].cells[0].innerText === ssid) {
+                    return false;
+                }
+            }
+            return true;
+            */
+            let flag = true;
+            $.ajax({
+                url: "student-servlet",
+                type: "post",
+                data: {
+                    "action": 'valid',
+                    "sid": sid
+                },
+                dataType: "text",
+                async: false,
+                success: function (data) {
+                    if (data === "false\r\n") {
+                        flag = false;
+                    }
+                },
+                error: function (data) {
+                    alert("验证失败");
+                }
+            })
+            return flag;
+        }
+
+        function validSname() {
+            if (document.getElementsByName("sname")[0].value === "") {
+                return false;
+            }
+            return true;
+        }
+
+        function validAge() {
+            if (document.getElementsByName("age")[0].value === "" || document.getElementsByName("age")[0].value < 0) {
+                return false;
+            }
+            return true;
+        }
+
+        function validBirthday() {
+            if (document.getElementsByName("birthday")[0].value === "") {
+                return false;
+            }
+            return true;
+        }
+
+        function validMajor() {
+            if (document.getElementsByName("major")[0].value === "") {
+                return false;
+            }
+            return true;
+        }
+
+        function validAdd() {
+            if (!validSid()) {
+                document.getElementById("isWrong").innerHTML = "<p>学号不能为空或该学号已存在</p>";
+                return false;
+            }
+            if (!validSname()) {
+                document.getElementById("isWrong").innerHTML = "<p>姓名不能为空</p>";
+                return false;
+            }
+            if (!validAge()) {
+                document.getElementById("isWrong").innerHTML = "<p>年龄不合法</p>";
+                return false;
+            }
+            if (!validBirthday()) {
+                document.getElementById("isWrong").innerHTML = "<p>生日不能为空</p>";
+                return false;
+            }
+            if (!validMajor()) {
+                document.getElementById("isWrong").innerHTML = "<p>专业不能为空</p>";
+                return false;
+            }
+            return true;
+        }
+
+
+        $(document).ready(function () {
+            $("button").click(function () {
+                if (!validAdd()) {
+                    alert("请正确填写信息");
+                    return false;
+                }
+                let sid = document.getElementsByName("sid")[0].value;
+                let sname = document.getElementsByName("sname")[0].value;
+                let age = document.getElementsByName("age")[0].value;
+                let gender = document.getElementsByName("gender")[0].value;
+                let birthday = document.getElementsByName("birthday")[0].value;
+                let major = document.getElementsByName("major")[0].value;
+                $.ajax({
+                    url: "student-servlet",
+                    type: "post",
+                    data: {
+                        "action": 'add',
+                        "sid": sid,
+                        "sname": sname,
+                        "age": age,
+                        "gender": gender,
+                        "birthday": birthday,
+                        "mid": major
+                    },
+                    dataType: "json",
+                    success: function (data) {
+                        window.location.reload();
+                    },
+                    error: function (data) {
+                        alert("添加失败");
+                    }
+                })
+            })
+
+
+            $.ajax({
+                url: "student-servlet",
+                type: "post",
+                data: {
+                    action: 'getAll'
+                },
+                dataType: "json",
+                success: function (data) {
+
+                    let result = "<table id='rsTable'><tr><td>学号</td><td>姓名</td><td>年龄</td><td>性别</td><td>生日</td><td>专业</td></tr>";
+                    const sex = new Map;
+                    sex.set('m', "男");
+                    sex.set('f', "女");
+                    const majors = new Map;
+                    //获取专业信息
+                    $.ajax({
+                        url: "major-servlet",
+                        type: "post",
+                        data: {
+                            action: 'getAll'
+                        },
+                        dataType: "json",
+                        async: false,
+                        success: function (data) {
+                            for (let i = 0; i < data.length; i++) {
+                                majors.set(data[i].mid, data[i].mname);
+                            }
+                        },
+                        error: function (data) {
+                            alert("专业信息获取失败");
+                        }
+                    })
+                    //获取学生信息
+                    for (let i = 0; i < data.length; i++) {
+                        result += "<tr>";
+                        let gender = sex.get(data[i].gender);
+                        let major = majors.get(data[i].mid);
+                        result += "<td>" + data[i].sid + "</td>";
+                        result += "<td>" + data[i].sname + "</td>";
+                        result += "<td>" + gender + "</td>";
+                        result += "<td>" + data[i].age + "</td>";
+                        result += "<td>" + data[i].birthday + "</td>";
+                        result += "<td>" + major + "</td>";
+                        result += "</tr>";
+                    }
+                    result += "</tr></table>";
+                    $("#result").html(result);
+                },
+                error: function () {
+                    $("#result").html("Error!");
+                }
+            })
+
+        })
+    </script>
+</head>
+<body>
+<h1>全部学生信息</h1>
+<div id="result"></div>
+<div id="StudentToAdd">
+
+
+    <h2>添加学生信息</h2>
+    <table>
+        <tr>
+            <td>学号</td>
+            <td>姓名</td>
+            <td>年龄</td>
+            <td>性别</td>
+            <td>生日</td>
+            <td>专业</td>
+        </tr>
+        <tr>
+
+            <td><input type="text" name="sid" placeholder="学号"></td>
+            <td><input type="text" name="sname" placeholder="姓名"></td>
+            <td><input type="number" name="age" placeholder="年龄"></td>
+            <td><input type="radio" name="gender" id="male" value="m" checked="">
+                <label for="male">男</label>
+                <input type="radio" name="gender" id="female" value="f">
+                <label for="female">女</label>
+            </td>
+            <td><input type="date" name="birthday"></td>
+            <td>
+                <select name="major" required="required">
+                    <option label="-请选择专业-"></option>
+                    <option value="01">计算机科学与技术</option>
+                    <option value="02">软件工程</option>
+                </select>
+            </td>
+        </tr>
+
+
+    </table>
+    <fieldset>
+        <div id="isWrong" align="center"></div>
+    </fieldset>
+
+    <button type="button">添加</button>
+</div>
+
+</body>
+</html>

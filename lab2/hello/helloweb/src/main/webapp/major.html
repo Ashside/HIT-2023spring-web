@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>专业信息-Information</title>
+    <script src="js/jquery-3.6.3.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            $.ajax({
+                url: "major-servlet",
+                type: "post",
+                data: {
+                    action: 'getAll'
+                },
+                dataType: "json",
+                success: function (data) {
+                    let result = "";
+                    for(let i=0;i<data.length;i++) {
+                        result += data[i].mid + '&nbsp;&nbsp;&nbsp;' + data[i].mname + "<br>";
+                    }
+                    $("#demo").html(result);
+                },
+                error: function () {
+                    $("#demo").html("Error!");
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+<div id="demo"></div>
+</body>
+</html>
